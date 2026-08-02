@@ -1,7 +1,7 @@
 // Prisma schema for the Still Dreaming site + automated prospect system.
-// SQLite by default (zero external setup); swap the datasource to Postgres
-// (e.g. Prisma Postgres, Supabase, Neon) for production by changing
-// `provider` and `DATABASE_URL` — no model changes required.
+// Postgres (any host: Neon, Supabase, Prisma Postgres, RDS, local) — required
+// because the app targets serverless hosting (Vercel), where a SQLite file
+// wouldn't persist between requests. Just set DATABASE_URL.
 
 generator client {
   provider = "prisma-client"
@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 enum LeadStatus {

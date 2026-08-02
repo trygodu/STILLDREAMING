@@ -24,15 +24,17 @@ lead-gen funnels, all wired together — not screenshots of past work.
 - **Page-view / attribution tracking** — `src/components/PageViewTracker.tsx` beacons every page
   view (path, referrer, UTM params) to `/api/track`.
 
-Everything is backed by SQLite + Prisma (`prisma/schema.prisma`) so it runs with zero external
-services. Swap `DATABASE_URL` and the `provider` in the schema to point at Postgres for production.
+Everything is backed by Postgres + Prisma (`prisma/schema.prisma`). Postgres is required rather than
+SQLite because the app targets serverless hosting (Vercel) — a SQLite file wouldn't persist between
+requests there. Any Postgres works: [Neon](https://neon.tech), [Supabase](https://supabase.com),
+Prisma Postgres, Vercel Postgres, RDS, or a local instance.
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env      # already defaults to a local SQLite db
-npx prisma migrate dev    # creates dev.db and applies the schema
+cp .env.example .env      # then set DATABASE_URL to a real Postgres connection string
+npx prisma migrate dev    # applies the schema
 npm run dev
 ```
 
@@ -41,20 +43,31 @@ Open [http://localhost:3000](http://localhost:3000). The admin dashboard is at `
 
 ## Environment variables
 
-See `.env.example` for the full list. Every integration is optional:
+See `.env.example` for the full list. `DATABASE_URL` is required; every other integration is
+optional and degrades gracefully:
 
 | Variable | Purpose | Without it |
 | --- | --- | --- |
-| `DATABASE_URL` | Prisma datasource | Defaults to local SQLite (`file:./dev.db`) |
+| `DATABASE_URL` | Prisma Postgres datasource | Required — app can't start without it |
 | `ANTHROPIC_API_KEY` | Live chatbot responses | Chatbot runs in demo mode |
 | `RESEND_API_KEY` / `LEAD_NOTIFICATION_EMAIL` | Email notification on new lead | Notification is logged + recorded as queued instead of sent |
 | `ADMIN_PASSWORD` | `/admin` login | Login always fails until set |
 | `ADMIN_SESSION_SECRET` | Signs the admin session cookie | Falls back to an insecure dev value — set this in production |
 
+## Deploying (Vercel)
+
+1. Import the repo at [vercel.com](https://vercel.com) → New Project.
+2. Provision a Postgres database (Vercel's own Postgres integration, or Neon/Supabase) and set
+   `DATABASE_URL` in the project's environment variables.
+3. Set `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` to real values (not the `.env.example` defaults).
+4. Add `ANTHROPIC_API_KEY` / `RESEND_API_KEY` whenever you have them — the site works without them.
+5. Run `npx prisma migrate deploy` against the production `DATABASE_URL` once (locally, or as a
+   Vercel build step) to create the tables, then deploy.
+
 ## Tech stack
 
-Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4 · Prisma 7 (SQLite via
-`@prisma/adapter-better-sqlite3`, portable to Postgres) · Anthropic Messages API.
+Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4 · Prisma 7 (Postgres via
+`@prisma/adapter-pg`) · Anthropic Messages API.
 
 ## Project structure
 
