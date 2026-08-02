@@ -1,0 +1,114 @@
+// Prisma schema for the Still Dreaming site + automated prospect system.
+// SQLite by default (zero external setup); swap the datasource to Postgres
+// (e.g. Prisma Postgres, Supabase, Neon) for production by changing
+// `provider` and `DATABASE_URL` — no model changes required.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
+enum LeadSource {
+  CONTACT_FORM
+  AUDIT_FUNNEL
+  CHATBOT
+  NEWSLETTER
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name    String?
+  email   String
+  company String?
+  message String?
+
+  source LeadSource @default(CONTACT_FORM)
+  status LeadStatus @default(NEW)
+  score  Int        @default(0)
+
+  // Attribution captured at time of conversion
+  page        String?
+  referrer    String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  activities Activity[]
+  messages   ChatMessage[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  STATUS_CHANGED
+  NOTE
+  EMAIL_QUEUED
+  EMAIL_SENT
+  CHAT_HANDOFF
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  createdAt DateTime     @default(now())
+  type      ActivityType
+  detail    String?
+
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+
+  @@index([leadId])
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  sessionId String
+  role      ChatRole
+  content   String
+
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId String?
+
+  @@index([sessionId])
+  @@index([leadId])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  sessionId String
+  path      String
+  referrer  String?
+
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  @@index([sessionId])
+  @@index([path])
+  @@index([createdAt])
+}
