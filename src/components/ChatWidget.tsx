@@ -61,10 +61,13 @@ export default function ChatWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="flex h-[28rem] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl">
+        <div className="flex h-[28rem] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-jade/20 bg-neutral-950 shadow-2xl shadow-jade/5">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
-              <p className="text-sm font-medium text-white">AI concierge</p>
+              <p className="font-display text-sm text-white">
+                <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-jade align-middle" />
+                AI concierge
+              </p>
               {demoMode && (
                 <p className="text-xs text-amber-400">Demo mode — no live API key connected</p>
               )}
@@ -84,7 +87,7 @@ export default function ChatWidget() {
                 key={i}
                 className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap ${
                   m.role === "user"
-                    ? "ml-auto bg-white text-black"
+                    ? "ml-auto bg-jade text-jade-ink"
                     : "bg-white/10 text-white"
                 }`}
               >
@@ -103,12 +106,12 @@ export default function ChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything…"
-              className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+              className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-jade/60 focus:outline-none"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-black disabled:opacity-50"
+              className="rounded-lg bg-jade px-3 py-2 text-sm font-medium text-jade-ink transition hover:bg-jade-bright disabled:opacity-50"
             >
               Send
             </button>
@@ -118,7 +121,7 @@ export default function ChatWidget() {
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-lg transition hover:scale-105"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-jade text-jade-ink shadow-lg shadow-jade/20 transition hover:scale-105 hover:bg-jade-bright"
         aria-label={open ? "Close chat" : "Open chat"}
       >
         {open ? "✕" : "💬"}

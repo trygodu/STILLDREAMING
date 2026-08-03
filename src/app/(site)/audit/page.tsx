@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LeadForm from "@/components/LeadForm";
+import Eyebrow from "@/components/Eyebrow";
 
 export const metadata: Metadata = { title: "Free AI-readiness audit" };
 
@@ -13,8 +14,8 @@ const CHECKLIST = [
 export default function AuditPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20">
-      <p className="text-sm font-medium uppercase tracking-widest text-white/40">Free audit</p>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+      <Eyebrow>Free audit</Eyebrow>
+      <h1 className="font-display text-4xl tracking-tight sm:text-5xl">
         The 15-point AI-readiness audit
       </h1>
       <p className="mt-6 max-w-xl text-white/70">
@@ -26,14 +27,14 @@ export default function AuditPage() {
       <ul className="mt-10 space-y-4">
         {CHECKLIST.map((item) => (
           <li key={item} className="flex gap-3 text-white/70">
-            <span className="mt-1 text-white/30">→</span>
+            <span className="mt-1 text-jade">→</span>
             <span>{item}</span>
           </li>
         ))}
       </ul>
 
-      <div className="mt-12 rounded-2xl border border-white/10 bg-white/5 p-8">
-        <h2 className="text-lg font-semibold text-white">Get yours</h2>
+      <div className="mt-12 rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
+        <h2 className="font-display text-lg text-white">Get yours</h2>
         <p className="mt-2 text-sm text-white/60">
           Two fields. Submitting this creates a tracked, scored lead — exactly like everything else
           on this site.

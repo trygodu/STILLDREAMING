@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import Eyebrow from "@/components/Eyebrow";
 
 export const metadata: Metadata = { title: "About" };
 
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-20">
-      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">The approach</h1>
-      <div className="mt-8 space-y-6 text-white/70">
+      <Eyebrow index="01">About</Eyebrow>
+      <h1 className="font-display text-4xl tracking-tight sm:text-5xl">The approach</h1>
+      <div className="mt-10 space-y-6 border-l border-white/10 pl-8 text-white/70">
         <p>
           Most agency pitches show you screenshots of past work and ask you to trust that the same
           quality applies to yours. This site skips that step: everything it claims to be able to
@@ -21,9 +23,10 @@ export default function AboutPage() {
           inspectable.
         </p>
         <p>
-          The build partner is Claude. Not as a buzzword — as the actual author of the code running
-          this page, the API routes behind the chatbot, and the automation that scored and logged
-          the lead the moment you filled out a form (or just showed up).
+          The build partner is <span className="text-jade">Claude</span>. Not as a buzzword — as the
+          actual author of the code running this page, the API routes behind the chatbot, and the
+          automation that scored and logged the lead the moment you filled out a form (or just
+          showed up).
         </p>
         <p>
           If that&rsquo;s the kind of system you want behind your own site — one that does more than

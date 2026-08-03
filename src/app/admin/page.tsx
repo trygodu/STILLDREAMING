@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { ADMIN_COOKIE, isValidAdminToken } from "@/lib/auth";
+import { buttonClasses } from "@/lib/ui";
 
 export const metadata: Metadata = { title: "Admin" };
 export const dynamic = "force-dynamic";
@@ -14,9 +15,10 @@ function sevenDaysAgo(): Date {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-xl border border-white/10 p-5">
+    <div className="relative overflow-hidden rounded-xl border border-white/10 p-5">
+      <span className="absolute inset-x-0 top-0 h-px bg-jade/40" />
       <p className="text-xs uppercase tracking-wide text-white/40">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 font-display text-2xl text-white">{value}</p>
     </div>
   );
 }
@@ -24,7 +26,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 function LoginForm({ error }: { error?: boolean }) {
   return (
     <div className="mx-auto flex min-h-full max-w-sm flex-1 flex-col justify-center px-6 py-24">
-      <h1 className="text-xl font-semibold text-white">Admin</h1>
+      <span className="mb-4 block h-2 w-2 rounded-full bg-jade" />
+      <h1 className="font-display text-2xl text-white">Admin</h1>
       <p className="mt-2 text-sm text-white/60">Enter the admin password to view the lead pipeline.</p>
       <form action="/api/admin/login" method="POST" className="mt-6 space-y-3">
         <input
@@ -33,13 +36,10 @@ function LoginForm({ error }: { error?: boolean }) {
           required
           autoFocus
           placeholder="Password"
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-jade/60 focus:outline-none"
         />
         {error && <p className="text-sm text-red-400">Incorrect password.</p>}
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-white/90"
-        >
+        <button type="submit" className={`w-full ${buttonClasses("primary", "sm")}`}>
           Sign in
         </button>
       </form>
@@ -81,13 +81,11 @@ export default async function AdminPage({
     <div className="mx-auto max-w-6xl px-6 py-12">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Lead pipeline</h1>
+          <h1 className="font-display text-2xl text-white">Lead pipeline</h1>
           <p className="mt-1 text-sm text-white/50">Everything captured automatically by the site.</p>
         </div>
         <form action="/api/admin/logout" method="POST">
-          <button className="rounded-full border border-white/20 px-4 py-2 text-sm text-white/70 hover:bg-white/10">
-            Sign out
-          </button>
+          <button className={buttonClasses("outline", "sm")}>Sign out</button>
         </form>
       </div>
 
@@ -126,7 +124,7 @@ export default async function AdminPage({
                 </td>
                 <td className="px-4 py-3 text-white/70">{lead.source.replace("_", " ")}</td>
                 <td className="px-4 py-3">
-                  <span className="rounded-full bg-white/10 px-2 py-1 text-xs font-medium text-white">
+                  <span className="rounded-full bg-jade/15 px-2 py-1 text-xs font-medium text-jade">
                     {lead.score}
                   </span>
                 </td>
@@ -150,7 +148,7 @@ export default async function AdminPage({
                     <select
                       name="status"
                       defaultValue={lead.status}
-                      className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white focus:border-white/30 focus:outline-none"
+                      className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-white focus:border-jade/60 focus:outline-none"
                     >
                       {STATUSES.map((s) => (
                         <option key={s} value={s} className="bg-neutral-900">
@@ -160,7 +158,7 @@ export default async function AdminPage({
                     </select>
                     <button
                       type="submit"
-                      className="rounded-lg border border-white/10 px-2 py-1 text-xs text-white/60 hover:bg-white/10 hover:text-white"
+                      className="rounded-lg border border-white/10 px-2 py-1 text-xs text-white/60 transition hover:border-jade/50 hover:text-jade"
                     >
                       Save
                     </button>

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { getAttribution } from "@/lib/attribution";
+import { buttonClasses } from "@/lib/ui";
 
 type Source = "CONTACT_FORM" | "AUDIT_FUNNEL" | "NEWSLETTER";
 
@@ -17,6 +18,9 @@ interface LeadFormProps {
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
+
+const INPUT_CLASSES =
+  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 transition focus:border-jade/60 focus:outline-none focus:ring-1 focus:ring-jade/30";
 
 export default function LeadForm({
   source,
@@ -64,7 +68,7 @@ export default function LeadForm({
   if (status === "success" && !redirectTo) {
     return (
       <div className={className}>
-        <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-300">
+        <p className="rounded-lg border border-jade/30 bg-jade/10 px-4 py-3 text-sm text-jade">
           Got it — you&rsquo;re in the system. I&rsquo;ll follow up shortly.
         </p>
       </div>
@@ -83,7 +87,7 @@ export default function LeadForm({
             name="name"
             type="text"
             autoComplete="name"
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            className={INPUT_CLASSES}
             placeholder="Ada Lovelace"
           />
         </div>
@@ -97,7 +101,7 @@ export default function LeadForm({
             type="email"
             required
             autoComplete="email"
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            className={INPUT_CLASSES}
             placeholder="ada@example.com"
           />
         </div>
@@ -110,7 +114,7 @@ export default function LeadForm({
               id="company"
               name="company"
               type="text"
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+              className={INPUT_CLASSES}
               placeholder="Optional"
             />
           </div>
@@ -124,7 +128,7 @@ export default function LeadForm({
               id="message"
               name="message"
               rows={4}
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+              className={INPUT_CLASSES}
               placeholder={messagePlaceholder}
             />
           </div>
@@ -134,7 +138,7 @@ export default function LeadForm({
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="mt-4 inline-flex items-center justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
+        className={buttonClasses("primary", "md", "mt-4")}
       >
         {status === "submitting" ? "Sending…" : submitLabel}
       </button>
