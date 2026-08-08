@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { ADMIN_COOKIE, isValidAdminToken } from "@/lib/auth";
+import { ADMIN_COOKIE, verifySessionToken } from "@/lib/auth";
 import type { LeadStatus } from "@/generated/prisma/enums";
 
 const VALID_STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "QUALIFIED", "WON", "LOST"];
 
 export async function POST(request: Request, ctx: RouteContext<"/api/admin/leads/[id]/status">) {
   const cookieStore = await cookies();
-  if (!isValidAdminToken(cookieStore.get(ADMIN_COOKIE)?.value)) {
+  if (!verifySessionToken(cookieStore.get(ADMIN_COOKIE)?.value)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
