@@ -212,7 +212,7 @@ export default async function AdminPage({
 
       <div className="mt-10 grid gap-4 lg:grid-cols-[2fr_1fr]">
         <div className="overflow-x-auto rounded-xl border border-white/10">
-          <table className="w-full min-w-[900px] text-left text-sm">
+          <table className="w-full min-w-[1000px] text-left text-sm">
             <thead className="border-b border-white/10 text-xs uppercase tracking-wide text-white/40">
               <tr>
                 <th className="px-4 py-3">Lead</th>
@@ -221,6 +221,7 @@ export default async function AdminPage({
                 <th className="px-4 py-3">Attribution</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Created</th>
+                <th className="px-4 py-3">Pitch deck</th>
               </tr>
             </thead>
             <tbody>
@@ -230,6 +231,16 @@ export default async function AdminPage({
                     <p className="font-medium text-white">{lead.name || "—"}</p>
                     <p className="text-white/50">{lead.email}</p>
                     {lead.company && <p className="text-white/40">{lead.company}</p>}
+                    {lead.website && (
+                      <a
+                        href={lead.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block truncate text-jade hover:text-jade-bright"
+                      >
+                        {lead.website.replace(/^https?:\/\//, "")}
+                      </a>
+                    )}
                     {lead.message && (
                       <p className="mt-1 max-w-xs truncate text-white/40" title={lead.message}>
                         {lead.message}
@@ -282,11 +293,19 @@ export default async function AdminPage({
                     {lead.createdAt.toLocaleDateString()}{" "}
                     {lead.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={`/api/admin/leads/${lead.id}/pitch-deck`}
+                      className="rounded-lg border border-jade/30 px-2 py-1 text-xs text-jade transition hover:border-jade hover:bg-jade/10"
+                    >
+                      Generate
+                    </a>
+                  </td>
                 </tr>
               ))}
               {leadsForTable.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-white/40">
+                  <td colSpan={7} className="px-4 py-10 text-center text-white/40">
                     No leads yet — go fill out the audit form or talk to the chatbot.
                   </td>
                 </tr>

@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     source,
     name: typeof body.name === "string" ? body.name : null,
     company: typeof body.company === "string" ? body.company : null,
+    website: typeof body.website === "string" ? body.website : null,
     message: typeof body.message === "string" ? body.message : null,
     page: typeof body.page === "string" ? body.page : null,
     referrer: typeof body.referrer === "string" ? body.referrer : null,

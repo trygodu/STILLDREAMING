@@ -6,6 +6,7 @@ export interface LeadInput {
   name?: string | null;
   email: string;
   company?: string | null;
+  website?: string | null;
   message?: string | null;
   source: LeadSource;
   page?: string | null;
@@ -21,6 +22,19 @@ export function isValidEmail(email: string): boolean {
   return EMAIL_RE.test(email.trim());
 }
 
+/** Accepts "example.com" or "https://example.com" alike; returns null if it still isn't a usable URL. */
+export function normalizeWebsiteUrl(input: string | null | undefined): string | null {
+  const trimmed = input?.trim();
+  if (!trimmed) return null;
+
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    return new URL(withScheme).toString();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Deterministic lead scoring so the "automation" in the admin dashboard has
  * something real to show — not just a list of names. Weighted toward
@@ -30,6 +44,7 @@ export function scoreLead(input: LeadInput): number {
   let score = 10;
 
   if (input.company) score += 20;
+  if (input.website) score += 15;
   if (input.message && input.message.trim().length > 40) score += 15;
   if (input.source === "AUDIT_FUNNEL") score += 25;
   if (input.source === "CHATBOT") score += 15;
@@ -41,12 +56,14 @@ export function scoreLead(input: LeadInput): number {
 
 export async function createLead(input: LeadInput) {
   const score = scoreLead(input);
+  const website = normalizeWebsiteUrl(input.website);
 
   const lead = await prisma.lead.create({
     data: {
       name: input.name?.trim() || null,
       email: input.email.trim().toLowerCase(),
       company: input.company?.trim() || null,
+      website,
       message: input.message?.trim() || null,
       source: input.source,
       score,

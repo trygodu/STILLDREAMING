@@ -36,13 +36,15 @@ export default function AuditPage() {
       <div className="mt-12 rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
         <h2 className="font-display text-lg text-white">Get yours</h2>
         <p className="mt-2 text-sm text-white/60">
-          Two fields. Submitting this creates a tracked, scored lead — exactly like everything else
-          on this site.
+          Your site&rsquo;s the whole point — the audit runs against the URL you give us.
+          Submitting this creates a tracked, scored lead, exactly like everything else on this site.
         </p>
         <LeadForm
           source="AUDIT_FUNNEL"
           submitLabel="Send me the audit"
           showCompany
+          showWebsite
+          requireWebsite
           redirectTo="/thank-you"
           className="mt-6"
         />

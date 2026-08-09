@@ -45,6 +45,7 @@ model Lead {
   name    String?
   email   String
   company String?
+  website String?
   message String?
 
   source LeadSource @default(CONTACT_FORM)
@@ -73,6 +74,7 @@ enum ActivityType {
   EMAIL_QUEUED
   EMAIL_SENT
   CHAT_HANDOFF
+  PITCH_DECK_GENERATED
 }
 
 model Activity {

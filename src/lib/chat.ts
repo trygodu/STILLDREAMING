@@ -119,3 +119,14 @@ export function extractEmail(text: string): string | null {
   // Strip trailing punctuation the regex greedily swept up (e.g. "me@x.com,").
   return match[0].replace(/[.,;:!?)\]]+$/, "");
 }
+
+const URL_RE = /(https?:\/\/[^\s]+)|(\b[a-z0-9-]+\.[a-z]{2,}(?:\/[^\s]*)?\b)/i;
+
+export function extractWebsite(text: string): string | null {
+  const match = text.match(URL_RE);
+  if (!match) return null;
+  const cleaned = match[0].replace(/[.,;:!?)\]]+$/, "");
+  // Don't mistake the visitor's own email domain for a website mention.
+  if (cleaned.includes("@")) return null;
+  return cleaned;
+}

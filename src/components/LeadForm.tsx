@@ -11,6 +11,8 @@ interface LeadFormProps {
   source: Source;
   submitLabel: string;
   showCompany?: boolean;
+  showWebsite?: boolean;
+  requireWebsite?: boolean;
   showMessage?: boolean;
   messagePlaceholder?: string;
   redirectTo?: string;
@@ -26,6 +28,8 @@ export default function LeadForm({
   source,
   submitLabel,
   showCompany = false,
+  showWebsite = false,
+  requireWebsite = false,
   showMessage = false,
   messagePlaceholder,
   redirectTo,
@@ -46,6 +50,7 @@ export default function LeadForm({
       name: data.get("name") || null,
       email: data.get("email"),
       company: data.get("company") || null,
+      website: data.get("website") || null,
       message: data.get("message") || null,
     };
 
@@ -106,7 +111,7 @@ export default function LeadForm({
           />
         </div>
         {showCompany && (
-          <div className="sm:col-span-2">
+          <div className="sm:col-span-1">
             <label htmlFor="company" className="mb-1 block text-sm text-white/70">
               Company / project
             </label>
@@ -116,6 +121,21 @@ export default function LeadForm({
               type="text"
               className={INPUT_CLASSES}
               placeholder="Optional"
+            />
+          </div>
+        )}
+        {showWebsite && (
+          <div className="sm:col-span-1">
+            <label htmlFor="website" className="mb-1 block text-sm text-white/70">
+              Website {requireWebsite ? <span className="text-white/40">*</span> : null}
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="text"
+              required={requireWebsite}
+              className={INPUT_CLASSES}
+              placeholder="yoursite.com"
             />
           </div>
         )}

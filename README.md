@@ -11,7 +11,14 @@ lead-gen funnels, all wired together — not screenshots of past work.
   (`/audit` → `/thank-you`).
 - **Lead tracking system** — every contact form, audit-funnel submission, and chatbot conversation
   that yields an email becomes a `Lead` row: scored, source-attributed (UTM/referrer/landing page),
-  and timestamped. See `src/lib/leads.ts`.
+  and timestamped. The audit funnel also captures the lead's own website URL (required there —
+  it's what the audit runs against). See `src/lib/leads.ts`.
+- **AI pitch-deck generator** — a "Generate" action on each lead in the admin dashboard drafts a
+  personalized proposal (Claude, via tool-use for structured output) grounded in what the lead
+  actually said plus real signals fetched from their own site (title, meta description, mobile
+  viewport tag, response time — `src/lib/site-audit.ts`), then renders it as a real downloadable
+  `.pptx` (`src/lib/pitchDeck.ts`, via `pptxgenjs`). Demo mode without `ANTHROPIC_API_KEY` still
+  produces a real deck from a deterministic template. Logged as a `PITCH_DECK_GENERATED` activity.
 - **AI chatbot** — a floating widget (`src/components/ChatWidget.tsx`) backed by `/api/chat`, which
   calls the Anthropic Messages API directly when `ANTHROPIC_API_KEY` is set. Without a key it runs
   in a clearly-labeled demo mode with deterministic responses, so the lead-capture flow still works
@@ -75,7 +82,7 @@ optional and degrades gracefully:
 ## Tech stack
 
 Next.js 16 (App Router, Turbopack) · TypeScript · Tailwind CSS v4 · Prisma 7 (Postgres via
-`@prisma/adapter-pg`) · Anthropic Messages API.
+`@prisma/adapter-pg`) · Anthropic Messages API · pptxgenjs.
 
 ## Project structure
 
@@ -88,9 +95,12 @@ src/lib/chat.ts                Anthropic call + demo-mode fallback
 src/lib/auth.ts                Session token signing + password hashing (scrypt)
 src/lib/users.ts                Account creation / credential verification
 src/lib/analytics.ts            Day-bucketing + breakdown helpers for the dashboard
+src/lib/site-audit.ts           Lightweight, SSRF-guarded fetch of a lead's own site
+src/lib/pitchDeck.ts             Claude-drafted deck content + pptxgenjs slide builder
 src/app/(site)/                Marketing pages (shares header/footer/chat widget)
 src/app/admin/                 Account-gated analytics dashboard + lead pipeline
-src/app/api/                   leads, chat, track, admin/signup, admin/login, admin/logout, admin/leads/[id]/status
+src/app/api/                   leads, chat, track, admin/signup, admin/login, admin/logout,
+                                admin/leads/[id]/status, admin/leads/[id]/pitch-deck
 src/components/                ChatWidget, LeadForm, SiteHeader/Footer, PageViewTracker
 src/components/admin/          StatTile, BarList, TrendBars (dashboard chart primitives)
 ```

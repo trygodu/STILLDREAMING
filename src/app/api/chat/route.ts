@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAssistantReply, extractEmail, type ChatTurn } from "@/lib/chat";
+import { getAssistantReply, extractEmail, extractWebsite, type ChatTurn } from "@/lib/chat";
 import { createLead, isValidEmail } from "@/lib/leads";
 
 const HISTORY_LIMIT = 20;
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     const lead = await createLead({
       email: candidateEmail,
       source: "CHATBOT",
+      website: extractWebsite(transcript),
       message: transcript.slice(0, 2000),
       page: typeof body.page === "string" ? body.page : null,
       referrer: typeof body.referrer === "string" ? body.referrer : null,
