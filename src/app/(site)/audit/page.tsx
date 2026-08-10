@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import LeadForm from "@/components/LeadForm";
+import Link from "next/link";
+import AuditSignupForm from "@/components/AuditSignupForm";
 import Eyebrow from "@/components/Eyebrow";
 
 export const metadata: Metadata = { title: "Free AI-readiness audit" };
@@ -7,8 +8,8 @@ export const metadata: Metadata = { title: "Free AI-readiness audit" };
 const CHECKLIST = [
   "Is your site actually capturing every interested visitor, or just the ones who happen to fill out a form?",
   "Do you know which channel your best leads come from — or does it all land in one inbox unlabeled?",
-  "If a visitor asks a question at 11pm, does anything answer them?",
-  "When a lead comes in, does anything happen automatically — or does someone have to notice it?",
+  "Is anything tracking your marketing — analytics, a pixel — or are you flying blind?",
+  "Is your business's public info (social links, local listing) actually working for you?",
 ];
 
 export default function AuditPage() {
@@ -19,9 +20,9 @@ export default function AuditPage() {
         The 15-point AI-readiness audit
       </h1>
       <p className="mt-6 max-w-xl text-white/70">
-        A short, honest look at where your site is leaking prospects — and exactly which piece of
-        this system (site, automation, AI, or funnel) would fix it fastest. Delivered by email,
-        no call required.
+        A real scan of your site — SEO, marketing tech, mobile-friendliness, social presence — turned
+        into a live dashboard and a proposal, both waiting the moment you submit. Not a PDF in your
+        inbox later; a login you can come back to.
       </p>
 
       <ul className="mt-10 space-y-4">
@@ -36,18 +37,14 @@ export default function AuditPage() {
       <div className="mt-12 rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
         <h2 className="font-display text-lg text-white">Get yours</h2>
         <p className="mt-2 text-sm text-white/60">
-          Your site&rsquo;s the whole point — the audit runs against the URL you give us.
-          Submitting this creates a tracked, scored lead, exactly like everything else on this site.
+          This creates your login to a personal portal — your dashboard, your proposal, come back
+          anytime. Already have one?{" "}
+          <Link href="/portal" className="text-jade underline underline-offset-4 hover:text-jade-bright">
+            Sign in
+          </Link>
+          .
         </p>
-        <LeadForm
-          source="AUDIT_FUNNEL"
-          submitLabel="Send me the audit"
-          showCompany
-          showWebsite
-          requireWebsite
-          redirectTo="/thank-you"
-          className="mt-6"
-        />
+        <AuditSignupForm className="mt-6" />
       </div>
     </div>
   );

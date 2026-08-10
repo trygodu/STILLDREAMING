@@ -22,6 +22,42 @@ model User {
   @@index([email])
 }
 
+/** A prospect's own self-serve portal account — separate from User (internal staff/admin). */
+model Client {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String?
+  email        String   @unique
+  passwordHash String
+  website      String
+  company      String?
+
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+  leadId String? @unique
+
+  report AuditReport?
+
+  @@index([email])
+}
+
+/** The scraped signals + AI-drafted proposal generated at portal signup, cached for repeat logins. */
+model AuditReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  website String
+  score   Int    @default(0)
+  // Structured findings from the site scan (see SiteAuditSignals type).
+  signals Json
+  // Structured proposal content (see DeckContent type) rendered on the portal page.
+  proposal Json
+
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String @unique
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
@@ -61,6 +97,7 @@ model Lead {
 
   activities Activity[]
   messages   ChatMessage[]
+  client     Client?
 
   @@index([email])
   @@index([status])
@@ -75,6 +112,7 @@ enum ActivityType {
   EMAIL_SENT
   CHAT_HANDOFF
   PITCH_DECK_GENERATED
+  PORTAL_ACCOUNT_CREATED
 }
 
 model Activity {

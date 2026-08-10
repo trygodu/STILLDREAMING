@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { getAttribution } from "@/lib/attribution";
 import { buttonClasses } from "@/lib/ui";
 
@@ -12,10 +11,8 @@ interface LeadFormProps {
   submitLabel: string;
   showCompany?: boolean;
   showWebsite?: boolean;
-  requireWebsite?: boolean;
   showMessage?: boolean;
   messagePlaceholder?: string;
-  redirectTo?: string;
   className?: string;
 }
 
@@ -29,13 +26,10 @@ export default function LeadForm({
   submitLabel,
   showCompany = false,
   showWebsite = false,
-  requireWebsite = false,
   showMessage = false,
   messagePlaceholder,
-  redirectTo,
   className,
 }: LeadFormProps) {
-  const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -64,13 +58,12 @@ export default function LeadForm({
 
       setStatus("success");
       form.reset();
-      if (redirectTo) router.push(redirectTo);
     } catch {
       setStatus("error");
     }
   }
 
-  if (status === "success" && !redirectTo) {
+  if (status === "success") {
     return (
       <div className={className}>
         <p className="rounded-lg border border-jade/30 bg-jade/10 px-4 py-3 text-sm text-jade">
@@ -127,13 +120,12 @@ export default function LeadForm({
         {showWebsite && (
           <div className="sm:col-span-1">
             <label htmlFor="website" className="mb-1 block text-sm text-white/70">
-              Website {requireWebsite ? <span className="text-white/40">*</span> : null}
+              Website
             </label>
             <input
               id="website"
               name="website"
               type="text"
-              required={requireWebsite}
               className={INPUT_CLASSES}
               placeholder="yoursite.com"
             />

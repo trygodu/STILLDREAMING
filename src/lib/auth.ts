@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
 export const ADMIN_COOKIE = "sd_admin_session";
+export const PORTAL_COOKIE = "sd_portal_session";
 
 function secret(): string {
   return process.env.ADMIN_SESSION_SECRET || "insecure-dev-secret";

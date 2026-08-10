@@ -5,8 +5,8 @@ import { ADMIN_COOKIE, verifySessionToken } from "@/lib/auth";
 import { userCount } from "@/lib/users";
 import { buttonClasses } from "@/lib/ui";
 import { bucketByDay, countBy, daysAgo } from "@/lib/analytics";
-import StatTile from "@/components/admin/StatTile";
-import BarList from "@/components/admin/BarList";
+import StatTile from "@/components/StatTile";
+import BarList from "@/components/BarList";
 import TrendBars from "@/components/admin/TrendBars";
 
 export const metadata: Metadata = { title: "Admin" };

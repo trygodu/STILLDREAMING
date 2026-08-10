@@ -7,17 +7,24 @@ lead-gen funnels, all wired together — not screenshots of past work.
 ## What's actually running here
 
 - **Marketing site** — Next.js App Router, Tailwind, dark theme, creative-agency-styled with jade
-  as the accent. Pages: home, about, proof (`/work`), services, contact, and a lead-magnet funnel
-  (`/audit` → `/thank-you`).
-- **Lead tracking system** — every contact form, audit-funnel submission, and chatbot conversation
-  that yields an email becomes a `Lead` row: scored, source-attributed (UTM/referrer/landing page),
-  and timestamped. The audit funnel also captures the lead's own website URL (required there —
-  it's what the audit runs against). See `src/lib/leads.ts`.
-- **AI pitch-deck generator** — a "Generate" action on each lead in the admin dashboard drafts a
-  personalized proposal (Claude, via tool-use for structured output) grounded in what the lead
-  actually said plus real signals fetched from their own site (title, meta description, mobile
-  viewport tag, response time — `src/lib/site-audit.ts`), then renders it as a real downloadable
-  `.pptx` (`src/lib/pitchDeck.ts`, via `pptxgenjs`). Demo mode without `ANTHROPIC_API_KEY` still
+  as the accent. Pages: home, about, proof (`/work`), services, contact, and the audit/signup funnel
+  (`/audit`).
+- **Lead tracking system** — every contact form, audit signup, and chatbot conversation that yields
+  an email becomes a `Lead` row: scored, source-attributed (UTM/referrer/landing page), and
+  timestamped. See `src/lib/leads.ts`.
+- **Client portal** (`/portal`) — the audit funnel is a real self-serve signup: a visitor submits
+  name/email/password/website and gets both a `Lead` (feeding the pipeline above) and a `Client`
+  account, created together. Signup synchronously scans their site (`src/lib/site-audit.ts`) for SEO
+  signals (meta tags, headings, image alt-text coverage, canonical/OG tags, robots.txt/sitemap),
+  installed marketing tech (Google Analytics, GTM, Meta Pixel), linked social profiles, and local-
+  business structured data — all scraped from their own public page, no auth/paid APIs needed — then
+  drafts a personalized proposal with Claude. Both are cached in an `AuditReport` and rendered as a
+  KPI dashboard + readable proposal the moment they submit, and every time they log back in at
+  `/portal`. Logged as a `PORTAL_ACCOUNT_CREATED` activity on their lead.
+- **AI pitch-deck generator** — separately, a "Generate" action on each lead in the *admin* dashboard
+  drafts a personalized proposal (same Claude tool-use pattern, reusing the site-scan above) and
+  renders it as a real downloadable `.pptx` (`src/lib/pitchDeck.ts`, via `pptxgenjs`) — for your own
+  outbound use, distinct from the client-facing portal. Demo mode without `ANTHROPIC_API_KEY` still
   produces a real deck from a deterministic template. Logged as a `PITCH_DECK_GENERATED` activity.
 - **AI chatbot** — a floating widget (`src/components/ChatWidget.tsx`) backed by `/api/chat`, which
   calls the Anthropic Messages API directly when `ANTHROPIC_API_KEY` is set. Without a key it runs
@@ -95,12 +102,15 @@ src/lib/chat.ts                Anthropic call + demo-mode fallback
 src/lib/auth.ts                Session token signing + password hashing (scrypt)
 src/lib/users.ts                Account creation / credential verification
 src/lib/analytics.ts            Day-bucketing + breakdown helpers for the dashboard
-src/lib/site-audit.ts           Lightweight, SSRF-guarded fetch of a lead's own site
-src/lib/pitchDeck.ts             Claude-drafted deck content + pptxgenjs slide builder
+src/lib/site-audit.ts           SSRF-guarded site scan: SEO, marketing tech, social, local business
+src/lib/pitchDeck.ts             Claude-drafted proposal content + pptxgenjs slide builder
+src/lib/clients.ts               Portal account creation / credential verification
 src/app/(site)/                Marketing pages (shares header/footer/chat widget)
-src/app/admin/                 Account-gated analytics dashboard + lead pipeline
-src/app/api/                   leads, chat, track, admin/signup, admin/login, admin/logout,
-                                admin/leads/[id]/status, admin/leads/[id]/pitch-deck
-src/components/                ChatWidget, LeadForm, SiteHeader/Footer, PageViewTracker
-src/components/admin/          StatTile, BarList, TrendBars (dashboard chart primitives)
+src/app/admin/                 Account-gated analytics dashboard + lead pipeline (staff/internal)
+src/app/portal/                Account-gated KPI dashboard + proposal (client-facing, self-serve)
+src/app/api/                   leads, chat, track, admin/{signup,login,logout,leads/[id]/status,
+                                leads/[id]/pitch-deck}, portal/{signup,login,logout}
+src/components/                ChatWidget, LeadForm, AuditSignupForm, SiteHeader/Footer, PageViewTracker
+src/components/StatTile.tsx, BarList.tsx    Shared dashboard chart primitives (admin + portal)
+src/components/admin/TrendBars.tsx          Day-by-day trend chart (admin only)
 ```
