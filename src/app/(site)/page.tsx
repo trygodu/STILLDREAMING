@@ -97,6 +97,39 @@ export default function HomePage() {
       </section>
 
       <section className="border-t border-white/10">
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <Eyebrow index="→">Free audits</Eyebrow>
+          <h2 className="font-display text-3xl tracking-tight sm:text-4xl">Two ways to see where you stand</h2>
+          <p className="mt-3 max-w-2xl text-white/60">
+            Pick whichever matters more right now — both create a login, both build into the same
+            dashboard.
+          </p>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 p-8">
+              <h3 className="font-display text-xl text-white">Website audit</h3>
+              <p className="mt-3 text-sm text-white/60">
+                SEO, marketing tech, mobile-friendliness, social presence — scanned live from your
+                own site.
+              </p>
+              <Link href="/audit" className={`mt-6 inline-flex ${buttonClasses("outline")}`}>
+                Audit my website
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
+              <h3 className="font-display text-xl text-white">Google Maps audit</h3>
+              <p className="mt-3 text-sm text-white/60">
+                Your real rating, reviews, and listing completeness — pulled straight from Google,
+                turned into a local-marketing proposal.
+              </p>
+              <Link href="/maps" className={`mt-6 inline-flex ${buttonClasses("primary")}`}>
+                Audit my Maps listing
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 rounded-2xl px-6 py-20 sm:flex-row sm:items-center">
           <div>
             <h2 className="font-display text-3xl tracking-tight sm:text-4xl">

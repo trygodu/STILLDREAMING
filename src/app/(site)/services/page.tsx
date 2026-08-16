@@ -34,6 +34,13 @@ const SERVICES = [
       "Purpose-built paths — lead magnets, audits, booking flows — engineered to turn traffic into tracked, attributed prospects.",
     items: ["Lead-magnet pages", "Thank-you / nurture flow", "UTM & campaign attribution"],
   },
+  {
+    index: "05",
+    name: "Google Maps & local presence",
+    description:
+      "Your rating, reviews, and listing completeness pulled straight from Google Places, scored, and turned into a concrete local-marketing strategy.",
+    items: ["Real Google Places lookup", "Rating, reviews & listing completeness scan", "Local-marketing strategy proposal"],
+  },
 ];
 
 export default function ServicesPage() {
@@ -73,12 +80,17 @@ export default function ServicesPage() {
         <div>
           <h2 className="font-display text-lg text-white">Not sure where to start?</h2>
           <p className="mt-2 text-sm text-white/60">
-            The free audit takes two minutes and tells you exactly that.
+            Either free audit takes two minutes and tells you exactly that.
           </p>
         </div>
-        <Link href="/audit" className={`shrink-0 ${buttonClasses("primary")}`}>
-          Get the free audit
-        </Link>
+        <div className="flex shrink-0 gap-3">
+          <Link href="/audit" className={buttonClasses("outline")}>
+            Website audit
+          </Link>
+          <Link href="/maps" className={buttonClasses("primary")}>
+            Maps audit
+          </Link>
+        </div>
       </div>
     </div>
   );
