@@ -1,6 +1,7 @@
 import PptxGenJS from "pptxgenjs";
 import type { Lead } from "@/generated/prisma/client";
 import type { SiteSignals } from "@/lib/site-audit";
+import type { MapsListingData } from "@/lib/maps-audit";
 
 const JADE = "00A86B";
 const INK = "0A0A0A";
@@ -126,14 +127,9 @@ function demoDeckContent(lead: Lead, signals: SiteSignals | null): DeckContent {
   };
 }
 
-export async function generateDeckContent(
-  lead: Lead,
-  signals: SiteSignals | null
-): Promise<{ content: DeckContent; demo: boolean }> {
+async function callClaudeForDeckContent(systemPrompt: string, userMessage: string): Promise<DeckContent | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { content: demoDeckContent(lead, signals), demo: true };
-  }
+  if (!apiKey) return null;
 
   try {
     const res = await fetch(ANTHROPIC_API_URL, {
@@ -146,29 +142,108 @@ export async function generateDeckContent(
       body: JSON.stringify({
         model: process.env.DECK_MODEL || DEFAULT_MODEL,
         max_tokens: 1500,
-        system: SYSTEM_PROMPT,
+        system: systemPrompt,
         tools: [DECK_TOOL],
         tool_choice: { type: "tool", name: "submit_deck_content" },
-        messages: [{ role: "user", content: `Draft the deck from these facts:\n${factsFor(lead, signals)}` }],
+        messages: [{ role: "user", content: userMessage }],
       }),
     });
 
     if (!res.ok) {
       console.error("Anthropic deck generation error", res.status, await res.text().catch(() => ""));
-      return { content: demoDeckContent(lead, signals), demo: true };
+      return null;
     }
 
     const data = (await res.json()) as { content?: { type: string; input?: unknown }[] };
     const toolBlock = data.content?.find(
       (block): block is { type: string; input: DeckContent } => block.type === "tool_use" && Boolean(block.input)
     );
-    if (!toolBlock) return { content: demoDeckContent(lead, signals), demo: true };
-
-    return { content: toolBlock.input, demo: false };
+    return toolBlock?.input ?? null;
   } catch (err) {
     console.error("Deck generation request failed", err);
-    return { content: demoDeckContent(lead, signals), demo: true };
+    return null;
   }
+}
+
+export async function generateDeckContent(
+  lead: Lead,
+  signals: SiteSignals | null
+): Promise<{ content: DeckContent; demo: boolean }> {
+  const content = await callClaudeForDeckContent(SYSTEM_PROMPT, `Draft the deck from these facts:\n${factsFor(lead, signals)}`);
+  return content ? { content, demo: false } : { content: demoDeckContent(lead, signals), demo: true };
+}
+
+const MAPS_SYSTEM_PROMPT = `You draft short local-marketing strategy proposals for Still Dreaming, a studio
+that helps businesses fix their Google Maps / local search presence as part of a broader
+website + automation + AI system.
+
+You'll be given a business's real Google Maps listing data (or told it couldn't be found).
+Draft a concrete, specific proposal outline focused on improving their Google Maps / local
+search presence — reviews, rating, listing completeness, categories, photos.
+
+Rules:
+- Never invent facts (ratings, review counts, hours) beyond what you're given.
+- Reference their real numbers directly (e.g. "27 reviews at 4.3 stars" rather than vague praise).
+- If no listing was found at all, the first section should address that specifically — an
+  unclaimed or unfindable listing is itself the most urgent finding.
+- 3-4 sections, each with 2-4 short, concrete bullets (no fluff, no corporate-speak).
+- End with a specific, low-friction next step (reply, short call), not a hard sell.
+- Submit your output only via the submit_deck_content tool.`;
+
+function mapsFactsFor(businessQuery: string, data: MapsListingData): string {
+  if (!data.found) {
+    return `Business searched: ${businessQuery}\nResult: no Google Maps listing could be found (${data.error || "no match"}).`;
+  }
+
+  return [
+    `Business searched: ${businessQuery}`,
+    `Listed name: ${data.name || "unknown"}`,
+    `Address: ${data.address || "not listed"}`,
+    `Phone listed: ${data.phone ? "yes" : "no"}`,
+    `Website listed: ${data.website || "none"}`,
+    `Rating: ${data.rating != null ? `${data.rating}/5` : "no rating yet"}`,
+    `Review count: ${data.reviewCount ?? 0}`,
+    `Categories: ${data.categories?.join(", ") || "none listed"}`,
+    `Business status: ${data.businessStatus || "unknown"}`,
+    `Hours listed: ${data.hasHours ? "yes" : "no"}`,
+    `Photo count: ${data.photoCount ?? 0}`,
+  ].join("\n");
+}
+
+function demoMapsProposal(businessQuery: string, data: MapsListingData): DeckContent {
+  return {
+    title: `Local presence for ${data.name || businessQuery}`,
+    subtitle: "Demo mode: connect GOOGLE_PLACES_API_KEY and ANTHROPIC_API_KEY for a live-drafted version",
+    sections: [
+      {
+        heading: "Where the listing stands",
+        bullets: [
+          data.found
+            ? `${data.rating ?? "no"} rating across ${data.reviewCount ?? 0} reviews right now.`
+            : "No listing found yet for this search — that's the first thing to fix.",
+          data.website ? "Website is linked from the listing." : "No website linked from the listing.",
+        ],
+      },
+      {
+        heading: "Reviews & rating",
+        bullets: ["A steady review-request flow after every job/sale", "Responding publicly to every review, good or bad"],
+      },
+      {
+        heading: "Listing completeness",
+        bullets: ["Hours, categories, and photos kept current", "Consistent name/address/phone across every directory"],
+      },
+    ],
+    closingHeadline: "Next step",
+    closingBullets: ["Reply or book a short call to walk through the fastest wins", "Scope is flexible — start with the piece that matters most"],
+  };
+}
+
+export async function generateMapsProposal(
+  businessQuery: string,
+  data: MapsListingData
+): Promise<{ content: DeckContent; demo: boolean }> {
+  const content = await callClaudeForDeckContent(MAPS_SYSTEM_PROMPT, `Draft the proposal from these facts:\n${mapsFactsFor(businessQuery, data)}`);
+  return content ? { content, demo: false } : { content: demoMapsProposal(businessQuery, data), demo: true };
 }
 
 function bulletList(bullets: string[]) {

@@ -30,13 +30,14 @@ model Client {
   name         String?
   email        String   @unique
   passwordHash String
-  website      String
+  website      String?
   company      String?
 
   lead   Lead?   @relation(fields: [leadId], references: [id])
   leadId String? @unique
 
-  report AuditReport?
+  report     AuditReport?
+  mapsReport MapsReport?
 
   @@index([email])
 }
@@ -58,6 +59,24 @@ model AuditReport {
   clientId String @unique
 }
 
+/** Google Places lookup + AI-drafted local-marketing proposal, cached per client. */
+model MapsReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  query   String // what they searched (business name + location)
+  placeId String?
+  score   Int    @default(0)
+  // Structured findings from Google Places (see MapsListingData type).
+  data Json
+  // Structured proposal content (see DeckContent type) rendered on the portal page.
+  proposal Json
+
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String @unique
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
@@ -71,6 +90,7 @@ enum LeadSource {
   AUDIT_FUNNEL
   CHATBOT
   NEWSLETTER
+  MAPS_FUNNEL
 }
 
 model Lead {
@@ -113,6 +133,7 @@ enum ActivityType {
   CHAT_HANDOFF
   PITCH_DECK_GENERATED
   PORTAL_ACCOUNT_CREATED
+  MAPS_AUDIT_GENERATED
 }
 
 model Activity {

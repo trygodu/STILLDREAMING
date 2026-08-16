@@ -21,6 +21,17 @@ lead-gen funnels, all wired together — not screenshots of past work.
   drafts a personalized proposal with Claude. Both are cached in an `AuditReport` and rendered as a
   KPI dashboard + readable proposal the moment they submit, and every time they log back in at
   `/portal`. Logged as a `PORTAL_ACCOUNT_CREATED` activity on their lead.
+- **Google Maps audit** (`/maps`) — a second, parallel self-serve funnel focused on local presence
+  instead of the website: submit a business name + location and it looks the listing up via the
+  **Google Places API** (`src/lib/maps-audit.ts` — rating, review count, categories, hours, photos,
+  linked website/phone, business status), scores it, and has Claude draft a local-marketing
+  proposal, cached as a `MapsReport`. If you're already signed into the portal (from `/audit`), this
+  just attaches to your existing account instead of asking you to sign up twice — one login, one
+  dashboard, both reports. Requires `GOOGLE_PLACES_API_KEY` (a **paid** Google API — see env vars
+  below); without it, `/maps` still works end to end in demo mode. Note: this only reads a
+  business's own public Places listing — actually *changing* anything on Google Maps (responding to
+  reviews, editing the listing) isn't something any API allows a third party to do on someone else's
+  behalf; the proposal is a strategy document, not an automated fix.
 - **AI pitch-deck generator** — separately, a "Generate" action on each lead in the *admin* dashboard
   drafts a personalized proposal (same Claude tool-use pattern, reusing the site-scan above) and
   renders it as a real downloadable `.pptx` (`src/lib/pitchDeck.ts`, via `pptxgenjs`) — for your own
@@ -70,8 +81,9 @@ optional and degrades gracefully:
 | Variable | Purpose | Without it |
 | --- | --- | --- |
 | `DATABASE_URL` | Prisma Postgres datasource | Required — app can't start without it |
-| `ANTHROPIC_API_KEY` | Live chatbot responses | Chatbot runs in demo mode |
+| `ANTHROPIC_API_KEY` | Live chatbot + proposal responses | Chatbot and both proposal generators run in demo mode |
 | `RESEND_API_KEY` / `LEAD_NOTIFICATION_EMAIL` | Email notification on new lead | Notification is logged + recorded as queued instead of sent |
+| `GOOGLE_PLACES_API_KEY` | Live `/maps` Google Business lookups (**paid API** — see below) | `/maps` runs in demo mode with a labeled fake listing |
 | `ADMIN_SESSION_SECRET` | Signs the admin login session cookie | Falls back to an insecure dev value — set this in production |
 
 ## Deploying (Vercel)
@@ -81,7 +93,10 @@ optional and degrades gracefully:
    `DATABASE_URL` in the project's environment variables — this is the step most likely to be
    missed, and without it every DB-backed route (leads, chat, admin, tracking) fails outright.
 3. Set `ADMIN_SESSION_SECRET` to a real random value (e.g. `openssl rand -hex 32`).
-4. Add `ANTHROPIC_API_KEY` / `RESEND_API_KEY` whenever you have them — the site works without them.
+4. Add `ANTHROPIC_API_KEY` / `RESEND_API_KEY` / `GOOGLE_PLACES_API_KEY` whenever you have them — the
+   site works without any of them. For `GOOGLE_PLACES_API_KEY`: create one in Google Cloud Console
+   with "Places API" enabled (the legacy API, not "Places API (New)"), and expect real per-lookup
+   charges on your Google Cloud billing once past the monthly free credit.
 5. Deploy. The build runs `prisma migrate deploy` automatically, so the database schema is created
    or updated on every deploy — no manual migration step.
 6. Visit `/admin` on the live URL once to create the owner account.
@@ -103,14 +118,16 @@ src/lib/auth.ts                Session token signing + password hashing (scrypt)
 src/lib/users.ts                Account creation / credential verification
 src/lib/analytics.ts            Day-bucketing + breakdown helpers for the dashboard
 src/lib/site-audit.ts           SSRF-guarded site scan: SEO, marketing tech, social, local business
-src/lib/pitchDeck.ts             Claude-drafted proposal content + pptxgenjs slide builder
+src/lib/maps-audit.ts           Google Places lookup (Find Place + Place Details) + scoring
+src/lib/pitchDeck.ts             Claude-drafted proposal content (site + Maps) + pptxgenjs slide builder
 src/lib/clients.ts               Portal account creation / credential verification
-src/app/(site)/                Marketing pages (shares header/footer/chat widget)
+src/app/(site)/                Marketing pages (shares header/footer/chat widget), incl. /audit, /maps
 src/app/admin/                 Account-gated analytics dashboard + lead pipeline (staff/internal)
-src/app/portal/                Account-gated KPI dashboard + proposal (client-facing, self-serve)
+src/app/portal/                Account-gated KPI dashboard + proposal(s) (client-facing, self-serve)
 src/app/api/                   leads, chat, track, admin/{signup,login,logout,leads/[id]/status,
-                                leads/[id]/pitch-deck}, portal/{signup,login,logout}
-src/components/                ChatWidget, LeadForm, AuditSignupForm, SiteHeader/Footer, PageViewTracker
+                                leads/[id]/pitch-deck}, portal/{signup,login,logout}, maps/signup
+src/components/                ChatWidget, LeadForm, AuditSignupForm, MapsSignupForm, SiteHeader/Footer,
+                                PageViewTracker
 src/components/StatTile.tsx, BarList.tsx    Shared dashboard chart primitives (admin + portal)
 src/components/admin/TrendBars.tsx          Day-by-day trend chart (admin only)
 ```

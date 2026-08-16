@@ -9,7 +9,7 @@ export async function createClient(input: {
   name?: string | null;
   email: string;
   password: string;
-  website: string;
+  website?: string | null;
   company?: string | null;
   leadId?: string | null;
 }) {
@@ -18,7 +18,7 @@ export async function createClient(input: {
       name: input.name?.trim() || null,
       email: input.email.trim().toLowerCase(),
       passwordHash: hashPassword(input.password),
-      website: input.website,
+      website: input.website || null,
       company: input.company?.trim() || null,
       leadId: input.leadId ?? null,
     },

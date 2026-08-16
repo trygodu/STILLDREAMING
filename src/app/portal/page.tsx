@@ -6,6 +6,7 @@ import { PORTAL_COOKIE, verifySessionToken } from "@/lib/auth";
 import { buttonClasses } from "@/lib/ui";
 import StatTile from "@/components/StatTile";
 import type { SiteSignals } from "@/lib/site-audit";
+import type { MapsListingData } from "@/lib/maps-audit";
 import type { DeckContent } from "@/lib/pitchDeck";
 
 export const metadata: Metadata = { title: "Your portal" };
@@ -58,6 +59,47 @@ function CheckRow({ ok, label }: { ok: boolean | undefined; label: string }) {
   );
 }
 
+function ProposalCard({ proposal }: { proposal: DeckContent }) {
+  return (
+    <div className="mt-6 rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
+      <p className="text-xs uppercase tracking-wide text-jade">Proposal</p>
+      <h2 className="mt-2 font-display text-3xl tracking-tight text-white">{proposal.title}</h2>
+      <p className="mt-2 text-white/60">{proposal.subtitle}</p>
+
+      <div className="mt-8 space-y-8">
+        {proposal.sections?.map((section) => (
+          <div key={section.heading} className="border-t border-white/10 pt-6">
+            <h3 className="font-display text-lg text-white">{section.heading}</h3>
+            <ul className="mt-3 space-y-2">
+              {section.bullets?.map((bullet) => (
+                <li key={bullet} className="flex gap-2 text-sm text-white/70">
+                  <span className="mt-1 text-jade">→</span>
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8 border-t border-white/10 pt-6">
+        <h3 className="font-display text-lg text-white">{proposal.closingHeadline}</h3>
+        <ul className="mt-3 space-y-2">
+          {proposal.closingBullets?.map((bullet) => (
+            <li key={bullet} className="flex gap-2 text-sm text-white/70">
+              <span className="mt-1 text-jade">→</span>
+              <span>{bullet}</span>
+            </li>
+          ))}
+        </ul>
+        <Link href="/contact" className={`mt-6 inline-flex ${buttonClasses("primary")}`}>
+          Let&rsquo;s talk
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default async function PortalPage({
   searchParams,
 }: {
@@ -71,7 +113,10 @@ export default async function PortalPage({
     return <LoginForm error={Boolean(error)} />;
   }
 
-  const client = await prisma.client.findUnique({ where: { id: clientId }, include: { report: true } });
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: { report: true, mapsReport: true },
+  });
   if (!client) {
     return <LoginForm />;
   }
@@ -79,6 +124,12 @@ export default async function PortalPage({
   const report = client.report;
   const signals = report?.signals as unknown as SiteSignals | undefined;
   const proposal = report?.proposal as unknown as DeckContent | undefined;
+  const hasSiteReport = Boolean(report && signals);
+
+  const mapsReport = client.mapsReport;
+  const mapsData = mapsReport?.data as unknown as MapsListingData | undefined;
+  const mapsProposal = mapsReport?.proposal as unknown as DeckContent | undefined;
+  const hasMapsReport = Boolean(mapsReport && mapsData);
 
   const socialEntries = signals?.social
     ? (Object.entries(signals.social).filter(([, url]) => url) as [string, string][])
@@ -90,22 +141,35 @@ export default async function PortalPage({
         <div>
           <p className="text-xs uppercase tracking-wide text-jade">Your portal</p>
           <h1 className="font-display text-2xl text-white">{client.company || client.name || "Your dashboard"}</h1>
-          <a href={client.website} target="_blank" rel="noreferrer" className="mt-1 block text-sm text-white/50 hover:text-jade">
-            {client.website.replace(/^https?:\/\//, "")}
-          </a>
+          {client.website && (
+            <a href={client.website} target="_blank" rel="noreferrer" className="mt-1 block text-sm text-white/50 hover:text-jade">
+              {client.website.replace(/^https?:\/\//, "")}
+            </a>
+          )}
         </div>
         <form action="/api/portal/logout" method="POST">
           <button className={buttonClasses("outline", "sm")}>Sign out</button>
         </form>
       </div>
 
-      {!report || !signals ? (
-        <div className="mt-10 rounded-xl border border-white/10 p-8 text-white/60">
-          Your report is still being put together — check back in a moment.
+      {!hasSiteReport && !hasMapsReport && (
+        <div className="mt-10 flex flex-col items-start gap-4 rounded-xl border border-white/10 p-8 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-white/60">Nothing here yet — run an audit to build your dashboard.</p>
+          <div className="flex gap-3">
+            <Link href="/audit" className={buttonClasses("outline", "sm")}>
+              Site audit
+            </Link>
+            <Link href="/maps" className={buttonClasses("outline", "sm")}>
+              Maps audit
+            </Link>
+          </div>
         </div>
-      ) : (
-        <>
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      )}
+
+      {hasSiteReport && signals && report && (
+        <section className="mt-10">
+          <p className="text-xs uppercase tracking-wide text-white/40">Website</p>
+          <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatTile label="Site score" value={`${report.score}/100`} />
             <StatTile label="HTTPS" value={signals.hasHttps ? "Yes" : "No"} />
             <StatTile label="Mobile-friendly" value={signals.hasViewportMeta ? "Yes" : "No"} />
@@ -123,7 +187,7 @@ export default async function PortalPage({
             <StatTile label="Local business signals" value={signals.localBusiness?.hasStructuredData || signals.localBusiness?.hasMapsEmbed ? "Found" : "None found"} />
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl border border-white/10 p-5">
               <p className="text-xs uppercase tracking-wide text-white/40">Technical SEO</p>
               <ul className="mt-4 space-y-2">
@@ -172,45 +236,36 @@ export default async function PortalPage({
             </div>
           </div>
 
-          {proposal && (
-            <div className="mt-10 rounded-2xl border border-jade/20 bg-jade/[0.04] p-8">
-              <p className="text-xs uppercase tracking-wide text-jade">Your proposal</p>
-              <h2 className="mt-2 font-display text-3xl tracking-tight text-white">{proposal.title}</h2>
-              <p className="mt-2 text-white/60">{proposal.subtitle}</p>
+          {proposal && <ProposalCard proposal={proposal} />}
+        </section>
+      )}
 
-              <div className="mt-8 space-y-8">
-                {proposal.sections?.map((section) => (
-                  <div key={section.heading} className="border-t border-white/10 pt-6">
-                    <h3 className="font-display text-lg text-white">{section.heading}</h3>
-                    <ul className="mt-3 space-y-2">
-                      {section.bullets?.map((bullet) => (
-                        <li key={bullet} className="flex gap-2 text-sm text-white/70">
-                          <span className="mt-1 text-jade">→</span>
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+      {hasMapsReport && mapsData && mapsReport && (
+        <section className="mt-10">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wide text-white/40">Google Maps</p>
+            {mapsData.demo && <p className="text-xs text-amber-400">Demo mode — no live API key connected</p>}
+          </div>
 
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <h3 className="font-display text-lg text-white">{proposal.closingHeadline}</h3>
-                <ul className="mt-3 space-y-2">
-                  {proposal.closingBullets?.map((bullet) => (
-                    <li key={bullet} className="flex gap-2 text-sm text-white/70">
-                      <span className="mt-1 text-jade">→</span>
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/contact" className={`mt-6 inline-flex ${buttonClasses("primary")}`}>
-                  Let&rsquo;s talk
-                </Link>
-              </div>
+          {!mapsData.found ? (
+            <div className="mt-3 rounded-xl border border-white/10 p-8 text-white/60">
+              {mapsData.error || `No Google Maps listing found for "${mapsReport.query}".`}
+            </div>
+          ) : (
+            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <StatTile label="Maps score" value={`${mapsReport.score}/100`} />
+              <StatTile label="Rating" value={mapsData.rating != null ? `${mapsData.rating}/5` : "—"} />
+              <StatTile label="Reviews" value={mapsData.reviewCount ?? 0} />
+              <StatTile label="Status" value={mapsData.businessStatus || "—"} />
+              <StatTile label="Website listed" value={mapsData.website ? "Yes" : "No"} />
+              <StatTile label="Phone listed" value={mapsData.phone ? "Yes" : "No"} />
+              <StatTile label="Hours listed" value={mapsData.hasHours ? "Yes" : "No"} />
+              <StatTile label="Photos" value={mapsData.photoCount ?? 0} />
             </div>
           )}
-        </>
+
+          {mapsProposal && <ProposalCard proposal={mapsProposal} />}
+        </section>
       )}
     </div>
   );

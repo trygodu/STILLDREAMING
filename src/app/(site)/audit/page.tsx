@@ -46,6 +46,14 @@ export default function AuditPage() {
         </p>
         <AuditSignupForm className="mt-6" />
       </div>
+
+      <p className="mt-8 text-center text-sm text-white/40">
+        Care more about your Google Maps listing than your website?{" "}
+        <Link href="/maps" className="text-jade underline underline-offset-4 hover:text-jade-bright">
+          Run the Maps audit
+        </Link>{" "}
+        instead.
+      </p>
     </div>
   );
 }

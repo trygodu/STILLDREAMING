@@ -16,6 +16,9 @@ export default function SiteFooter() {
           <a href="mailto:info@trygodu.com" className="transition hover:text-jade">
             info@trygodu.com
           </a>
+          <Link href="/maps" className="transition hover:text-jade">
+            Maps audit
+          </Link>
           <Link href="/portal" className="transition hover:text-jade">
             Portal
           </Link>
